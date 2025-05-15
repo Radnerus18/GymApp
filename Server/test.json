@@ -1,0 +1,11 @@
+{
+    "role":"client",
+    "name":"abc",
+    "email":"eg@eg.com",
+    "membership":{
+        "plan":"basic",
+        "duration":"3 months",
+        "startDate":"today date",
+        "endDate":"today + 3 months"
+    }
+}
