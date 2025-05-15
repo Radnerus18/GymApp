@@ -18,7 +18,7 @@ export const postData = createAsyncThunk(
     'data/postData',
     async (payload: object, { rejectWithValue }) => {
         try {
-            const response = await axios.post(import.meta.env.VITE_APP_AXIOS_URL_1+'/register', payload);
+            const response = await axios.post(import.meta.env.VITE_APP_AXIOS_URL_1+'/api/client/register', payload);
             return response.data;
         } catch (error:unknown) {
             if (axios.isAxiosError(error)) {

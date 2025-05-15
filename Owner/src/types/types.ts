@@ -10,6 +10,7 @@ export interface NewClient{
     city:string,
     pincode:string,
     plan:string,
+    adminId:string
 }
 export interface OtpVerify{
     onVerify: (otp: string) => void;

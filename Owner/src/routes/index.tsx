@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createHashRouter } from "react-router-dom";
 import Login from "../components/auth/Login";
 import Signup from "../components/auth/Signup";
 import Home from "../components/dashboard/Home";
@@ -9,16 +9,14 @@ import { RouterProvider } from "react-router-dom";
 import NotFoundPage from "../NotFoundPage";
 import TrainerList from "../components/Trainer/TrainerProfile";
 import { Navigate, Outlet } from "react-router-dom";
-import { useSelector } from "react-redux";
-import type {  RootState } from '../redux/store';
+import { getCookie } from '../utils/cookie';
 
 const ProtectedRoute = () => {
-  const { loginSuccess } = useSelector((state: RootState) => state.auth);
-
-  return loginSuccess ? <Outlet /> : <Navigate to='/login' replace />;
+  const token = getCookie('token');
+  return token ? <Outlet /> : <Navigate to='/login' replace />;
 };
 
-const router = createBrowserRouter([
+const router = createHashRouter([
   {
     path: '/',
     element: <ProtectedRoute />, // Protect all children routes

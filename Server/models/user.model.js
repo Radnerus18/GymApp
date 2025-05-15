@@ -34,6 +34,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     
   },
+  adminId:{
+    type:String,
+  },
   
   // Reference to Membership
   membership: {

@@ -3,55 +3,73 @@ const Membership = require('../models/membership.model')
 const bcrypt = require('bcryptjs');
 const appResponse = require('../middlewares/response');
 const SecureToken = require('../middlewares/token');
-const jwt = require('jsonwebtoken')
 require('dotenv').config()
+const {createTransporter,getWelcomeMailOptions} = require('../middlewares/mailer')
+const jwt = require('jsonwebtoken');
+const auth_mail = process.env.OTP_USER_NAME;
+const auth_pass = process.env.OTP_API_KEY;
+
+const transporter = createTransporter({
+  service: 'gmail',
+  user: auth_mail,
+  pass: auth_pass
+});
+const mailOptions = (email, adminId, adminPwd)=>{
+    return getWelcomeMailOptions({
+        from: auth_mail,
+        to: email,
+        userId: adminId,
+        userPwd: adminPwd
+    });
+}
 
 
 
+// Create user under the admin
 const AddUser = async (req, res) => {
-    const { full_name, email, phoneNumber } = req.body;
-    const userId = 'DB'+Math.floor(Math.random()*9999)
-    const userPwd = full_name.substr(0,4)+'@'+phoneNumber.toString().substring(6,9)
+    const { full_name, email, phoneNumber, adminId } = req.body;
+    const userId = 'DB' + Math.floor(Math.random() * 9999);
+    const userPwd = full_name.substr(0, 4) + '@' + phoneNumber.toString().substring(6, 9);
     const hashedPassword = await bcrypt.hash(userPwd, 10);
-    const today = new Date();
-    const endDate = new Date();
-    endDate.setMonth(today.getMonth() + 3); // add 3 months
     try {
-        const existingUser = await User.findOne({ 
+        const existingUser = await User.findOne({
             $or: [
-            { email: email },
-            { phone: phoneNumber }
+                { email: email },
+                { phone: phoneNumber }
             ]
         });
-        console.log('@@@',req.body)
         if (existingUser) {
-            return res.json(appResponse('User already exists',false,null));
+            return res.json(appResponse('User already exists', false, null));
         }
         const selectedMembership = await Membership.findOne({ plan: req.body.plan });
 
-        const newUser = await User.create({ 
+        const newUser = await User.create({
             role: 'client',
             name: full_name,
             joiningDate: new Date().toDateString().replace(/^\w+\s/, ''),
             password: hashedPassword,
             clientId: userId,
-            membership: selectedMembership._id,
-            ...req.body 
+            membership: selectedMembership?._id,
+            admin: adminId, // Assign adminId to the user
+            ...req.body
         });
 
         const completeUserDetail = await User.findById(newUser._id).populate('membership');
-        // console.log('$$$', completeUserDetail);
 
-        transporter.sendMail(mailOptions(email,userId,userPwd), (err, info) => {
-            if(err){
-                console.log('Error in sending mail')
-            }
-            console.log('Mail sent successfully',info.response)
-        })
-        return res.json(appResponse('Registration successful. We will reach you.',true, completeUserDetail ));
+        if (typeof transporter !== 'undefined' && typeof mailOptions === 'function') {
+            const options = mailOptions(email, userId, userPwd)
+            transporter.sendMail(options, (err, info) => {
+                if (err) {
+                    console.log('Error in sending mail');
+                } else {
+                    console.log('Mail sent successfully', info.response);
+                }
+            });
+        }
+        return res.json(appResponse('Registration successful. We will reach you.', true, completeUserDetail));
     } catch (err) {
-        console.error('Error in registration',err);
-        return res.json(appResponse('Error in registration', false,null));
+        console.error('Error in registration', err);
+        return res.json(appResponse('Error in registration', false, null));
     }
 };
 const Login = async(req,res,next)=>{
@@ -104,24 +122,25 @@ const Userverification = async(req,res)=>{
 }
 const GetUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id, adminId } = req.params;
         if (id) {
             const user = await User.findOne({ clientId: id }).populate('membership');
             if (!user) {
                 return res.json(appResponse('User not found', false, null));
             }
             return res.json(appResponse('User retrieved successfully', true, user));
+        } else if (adminId) {
+            const users = await User.find({ admin: adminId }).populate('membership');
+            if (!users || users.length === 0) {
+                return res.json(appResponse('No users found for this admin', false, null));
+            }
+            return res.json(appResponse('Users retrieved successfully', true, users));
         } else {
-            const users = await User.find({});
-            // Populate membership for each user
-            const allUser = await Promise.all(users.map(async (u) => {
-                return await u.populate('membership');
-            }));
-            // console.log('All users',allUser)
+            const users = await User.find({}).populate('membership');
             if (!users || users.length === 0) {
                 return res.json(appResponse('No users found', false, null));
             }
-            return res.json(appResponse('Users retrieved successfully', true, allUser));
+            return res.json(appResponse('Users retrieved successfully', true, users));
         }
     } catch (err) {
         console.error('Error fetching user(s)', err);

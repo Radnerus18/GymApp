@@ -27,6 +27,7 @@ interface Admin {
 
 interface AuthState {
   admin: Admin | null;
+  adminId:string,
   loading: boolean;
   error: unknown | null;
   loginSuccess:boolean
@@ -34,6 +35,7 @@ interface AuthState {
 
 const initialState: AuthState = {
   admin: null,
+  adminId:"",
   loading: false,
   error: null,
   loginSuccess:false
@@ -59,7 +61,28 @@ export const adminLogin = createAsyncThunk(
     }
   }
 );
-
+export const fetchAdminMe = createAsyncThunk(
+  'auth/fetchAdminMe',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(
+        import.meta.env.VITE_APP_AXIOS_URL_1 + '/api/admin/me',
+        { withCredentials: true }
+      );
+      console.log('@@@ fetchme',response.data.adminId)
+      return response.data.adminId;
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 401) {
+          // Optionally handle unauthorized access here
+          console.warn("Unauthorized access. Please log in.");
+        }
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue('An unknown error occurred');
+    }
+  }
+);
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -87,9 +110,20 @@ const authSlice = createSlice({
       .addCase(adminLogin.fulfilled, (state: AuthState, action) => {
         state.loading = false;
         state.admin = action.payload;
-        state.loginSuccess = true
       })
       .addCase(adminLogin.rejected, (state: AuthState, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(fetchAdminMe.pending, (state: AuthState) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAdminMe.fulfilled, (state: AuthState, action) => {
+        state.loading = false;
+        state.adminId = action.payload;
+      })
+      .addCase(fetchAdminMe.rejected, (state: AuthState, action) => {
         state.loading = false;
         state.error = action.payload;
       });

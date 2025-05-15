@@ -78,16 +78,18 @@ const AdminLogin = async (req, res) => {
         if (!isMatch) {
             return res.json(appResponse('Invalid credentials', false, null));
         }
+        req.session.adminId = admin.adminId;
         const token = jwt.sign(
             { id: admin._id, adminId: admin.adminId, role: admin.role },
-            process.env.JWT_SECRET || 'default_secret',
+            process.env.SECRET_KEY || 'default_secret',
             { expiresIn: '1d' }
         );
         // Send token as cookie
         res.cookie('token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+            httpOnly : true,
+            secure   : process.env.NODE_ENV === 'production',
+            sameSite : 'None',              // required if front-end is on another origin
+            maxAge   : 24 * 60 * 60 * 1000, // 1 day
         });
         return res.json(appResponse('Login successful', true, { admin,token }));
     } catch (error) {
@@ -95,6 +97,14 @@ const AdminLogin = async (req, res) => {
         return res.json(appResponse('Error in admin login', false, null));
     }
 };
+const GetAdminId = async(req, res) => {
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: 'Unauthorized' });
 
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) return res.status(403).json({ message: 'Forbidden' });
+    res.json({ adminId: decoded.adminId });
+  });
+}
 
-module.exports = {AddAdmin,AdminLogin}
+module.exports = {AddAdmin,AdminLogin,GetAdminId}

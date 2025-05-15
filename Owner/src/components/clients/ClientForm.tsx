@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { NewClient } from "../../types/types";
 import OTPVerification from "../auth/Otp_verify";
 import axios from "axios";
@@ -29,8 +29,11 @@ const ClientForm = () => {
     city: "",
     pincode: "",
     plan: "",
+    adminId:""
   });
-
+  useEffect(()=>{
+    
+  },[])
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {

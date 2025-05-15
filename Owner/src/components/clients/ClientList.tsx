@@ -2,7 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import Pagination from "./Pagination";
 import { Eye, Trash2, RefreshCwIcon } from "lucide-react";
-
+import { useDispatch,useSelector } from "react-redux";
+import { AppDispatch,RootState } from "../../redux/store";
+import { fetchAdminMe } from "../../redux/authSlice";
 const ClientList = () => {
   interface Client {
     clientId: string;
@@ -20,7 +22,8 @@ const ClientList = () => {
     dob: string;
     gender: string;
   }
-
+  
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [clients, setClients] = useState<Client[]>([]);
@@ -29,26 +32,33 @@ const ClientList = () => {
   const searchInp = useRef<HTMLInputElement | null>(null);
   const [page, setPage] = useState(1);
   const totalPages = 5;
-
+const dispatch = useDispatch<AppDispatch>();
+  const { adminId } = useSelector((state: RootState) => state.auth);
   const handleRefresh = async () => {
     setIsRotating(true);
     setSearchTerm("");
     if (searchInp.current) {
       searchInp.current.value = "";
     }
-    await getAllUsers();
+    await getAllUsers(adminId);
     setTimeout(() => setIsRotating(false), 500);
   };
+  
 
-  const getAllUsers = async () => {
+  useEffect(() => {
+    dispatch(fetchAdminMe());
+  }, []);
+
+  const getAllUsers = async (adminIdParam?: string) => {
+    const idToUse = adminIdParam || adminId;
     try {
       const response = await axios.get(
-        import.meta.env.VITE_APP_AXIOS_URL_1 + "/api/client/getUser/"
+        `${import.meta.env.VITE_APP_AXIOS_URL_1}/api/client/getUser?adminID=${idToUse}`
       );
-  
+
       const users = response?.data?.data || [];
-    console.log('@@@',users)
-  
+      console.log('@@@', users);
+
       if (Array.isArray(users) && users.length > 0) {
         setClients(users);
         setFilteredClients(users);
@@ -95,7 +105,7 @@ const ClientList = () => {
   const getUserById = async (id: string) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_APP_AXIOS_URL_1}/getUser/${id}`
+        `${import.meta.env.VITE_APP_AXIOS_URL_1}/api/client/getUser/${id}`
       );
       console.log(response.data);
     } catch (error) {
@@ -105,8 +115,8 @@ const ClientList = () => {
   };
 
   useEffect(() => {
-    getAllUsers();
-    console.log('!@#',filteredClients)
+    console.log('adminId', adminId);
+    handleRefresh()
   }, []);
 
   return (
