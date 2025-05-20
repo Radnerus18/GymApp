@@ -1,5 +1,6 @@
 const express = require('express');
 const session = require('express-session');
+const helmet = require('helmet')
 const path = require('path')
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -13,6 +14,7 @@ db()
 app.use(express.json())
 app.use(cookieParser())
 app.use(bodyParser.json())
+app.use(helmet())
 app.use(session({
   secret: SECRET_KEY, // Replace with a strong secret
   resave: false,
@@ -25,10 +27,11 @@ app.use(session({
 }));
 app.use(
   cors({
-    origin: 'http://192.168.1.5:5173',   // exact front-end origin
+    origin: 'http://localhost:5173',   // exact front-end origin
     credentials: true,                   // allow cookies / auth headers
     methods: ['GET','POST','PUT','DELETE','OPTIONS'],
-    allowedHeaders: ['Content-Type','Authorization'],
+    allowedHeaders: ['Content-Type','Authorization','X-Requested-With','Referrer-Policy'],
+    exposedHeaders: ['set-cookie'],
   })
 );
 app.use(appRoute)

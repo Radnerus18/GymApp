@@ -5,15 +5,15 @@ import axios from "axios";
 import OtpSuccessMessage from "../auth/Otp-result";
 import MembershipDropdown from "./Memebership";
 import { BeatLoader } from "react-spinners";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../redux/store";
+import { useDispatch,useSelector } from "react-redux";
+import { AppDispatch,RootState } from "../../redux/store";
 import { postData } from "../../redux/slice";
 const inputStyle =
   "mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-300";
 
 const ClientForm = () => {
   const dispatch = useDispatch<AppDispatch>();
-
+  const { adminId } = useSelector((state: RootState) => state.auth);
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [loading, setLoading] = useState(false);
   const [otpVerified, setOtpVerified] = useState(false);
@@ -29,16 +29,17 @@ const ClientForm = () => {
     city: "",
     pincode: "",
     plan: "",
-    adminId:""
+    adminId:adminId
   });
   useEffect(()=>{
-    
-  },[])
+    console.log('form',newClientData)
+  },[adminId])
   const handleFormChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     setNewClientData({
       ...newClientData,
+      adminId:adminId,
       [e.target.name]: e.target.value,
     });
   };

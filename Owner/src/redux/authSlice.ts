@@ -41,6 +41,8 @@ const initialState: AuthState = {
   loginSuccess:false
 };
 
+
+
 export const adminLogin = createAsyncThunk(
   'auth/adminLogin',
   async (
@@ -64,12 +66,33 @@ export const adminLogin = createAsyncThunk(
 export const fetchAdminMe = createAsyncThunk(
   'auth/fetchAdminMe',
   async (_, { rejectWithValue }) => {
+    // Get token from cookies instead of localStorage
+    const getCookie = (name: string): string | null => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()!.split(';').shift() || null;
+      return null;
+    };
+    const token = getCookie('token');
     try {
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
       const response = await axios.get(
         import.meta.env.VITE_APP_AXIOS_URL_1 + '/api/admin/me',
-        { withCredentials: true }
+        {
+          withCredentials: true,
+          headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-Requested-With': 'XMLHttpRequest',
+        'Referrer-Policy': 'no-referrer'
+          }
+        }
       );
-      console.log('@@@ fetchme',response.data.adminId)
+      // Optionally validate response structure
+      if (!response.data || !response.data.adminId) {
+        return rejectWithValue('Invalid response from server');
+      }
       return response.data.adminId;
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {

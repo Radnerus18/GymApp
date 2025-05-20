@@ -122,21 +122,18 @@ const Userverification = async(req,res)=>{
 }
 const GetUser = async (req, res) => {
     try {
-        const { id, adminId } = req.params;
-        if (id) {
-            const user = await User.findOne({ clientId: id }).populate('membership');
-            if (!user) {
-                return res.json(appResponse('User not found', false, null));
-            }
-            return res.json(appResponse('User retrieved successfully', true, user));
-        } else if (adminId) {
-            const users = await User.find({ admin: adminId }).populate('membership');
+        const { adminId } = req.query;
+        console.log('###',adminId)
+        let users;
+
+        if (adminId) {
+            users = await User.find({ adminId: adminId }).populate('membership');
             if (!users || users.length === 0) {
                 return res.json(appResponse('No users found for this admin', false, null));
             }
             return res.json(appResponse('Users retrieved successfully', true, users));
         } else {
-            const users = await User.find({}).populate('membership');
+            users = await User.find({}).populate('membership');
             if (!users || users.length === 0) {
                 return res.json(appResponse('No users found', false, null));
             }

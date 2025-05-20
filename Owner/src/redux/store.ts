@@ -1,12 +1,14 @@
 import { configureStore } from '@reduxjs/toolkit';
 import dataReducer from './slice.ts';
 import authReducer from './authSlice.ts'
+import classReducer from './classSlice.ts'
 // Example reducer (replace with your actual reducers)
 
 const store = configureStore({
     reducer: {
         example: dataReducer,
-        auth:authReducer
+        auth:authReducer,
+        class:classReducer
     },
 });
 

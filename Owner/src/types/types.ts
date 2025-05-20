@@ -45,3 +45,19 @@ export interface NotificationProps{
     content: string;
     time: string;
 };
+export interface ClassItem {
+  _id: any;
+  classType: 'today' | 'weekly' | 'personal' | 'request' | string; // use union type if known
+  // ... other fields
+}
+export interface ClassDataType {
+  today: ClassItem[];
+  weekly: ClassItem[];
+  personal: ClassItem[];
+  request: ClassItem[];
+}
+export interface ClassesDataProps {
+  clsdata: object; // Replace 'any' with a more specific type if available
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  deleteClass:(res:any)=>void
+}

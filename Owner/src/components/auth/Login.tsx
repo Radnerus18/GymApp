@@ -4,6 +4,7 @@ import { Link,useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch, RootState } from '../../redux/store';
 import { adminLogin } from '../../redux/authSlice';
+import { fetchAdminMe } from '../../redux/authSlice';
 const Login: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>();
     const [userDetails, setUserDetails] = useState({
@@ -21,6 +22,7 @@ const Login: React.FC = () => {
             if (token) {
                 document.cookie = `token=${token}; path=/;`;
             }
+            dispatch(fetchAdminMe())
             nav('/');
             setTimeout(() => {
                 toast.success('Login successful!');

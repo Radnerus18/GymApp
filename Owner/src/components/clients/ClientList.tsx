@@ -47,13 +47,19 @@ const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     dispatch(fetchAdminMe());
-  }, []);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (adminId) {
+      handleRefresh();
+    }
+  }, [adminId]);
 
   const getAllUsers = async (adminIdParam?: string) => {
     const idToUse = adminIdParam || adminId;
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_APP_AXIOS_URL_1}/api/client/getUser?adminID=${idToUse}`
+        `${import.meta.env.VITE_APP_AXIOS_URL_1}/api/client/getUser?adminId=${idToUse}`
       );
 
       const users = response?.data?.data || [];
@@ -114,10 +120,6 @@ const dispatch = useDispatch<AppDispatch>();
     }
   };
 
-  useEffect(() => {
-    console.log('adminId', adminId);
-    handleRefresh()
-  }, []);
 
   return (
     <div className="w-full h-[100%] bg-gradient-to-br from-white to-gray-50 shadow-lg px-8 pt-6 pb-8 mb-6 overflow-x-auto border border-gray-200 flex flex-col items-center justify-between">

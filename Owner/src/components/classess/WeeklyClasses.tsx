@@ -1,28 +1,35 @@
-import  { useState } from 'react';
-
-type WeeklyClass = {
+import  { useState,useEffect } from 'react';
+import AddClassModal from './AddClassModal';
+import { ClassesDataProps } from '../../types/types';
+type WeeklyClassItem = {
+  _id:string;
   title: string;
   day: string;
   time: string;
-  instructor: string;
+  trainer: string;
+  type:string;
 };
 
-const WeeklyClasses = () => {
-  const [weekClasses, setWeekClasses] = useState<WeeklyClass[]>([
-    { title: 'Strength Training', day: 'Monday', time: '9:00 AM', instructor: 'John' },
-    { title: 'Zumba Dance', day: 'Wednesday', time: '6:00 PM', instructor: 'Lily' },
-    { title: 'Pilates', day: 'Friday', time: '7:00 AM', instructor: 'Emma' }
+const WeeklyClasses = ({ clsdata,deleteClass }: ClassesDataProps) => {
+  const [modalOpen, setModalOpen] = useState(false);
+  
+  const workoutTypes = ['Yoga', 'Zumba', 'CrossFit', 'HIIT'];
+  const trainers = ['John Doe', 'Jane Smith', 'Alex Turner'];
+  const [weekClasses, setWeekClasses] = useState<WeeklyClassItem[]>([
+    { _id:'',title: '',day:'', time: '', trainer: '',type:'' },
   ]);
-
+  useEffect(()=>{
+    if (Array.isArray(clsdata)) {
+      setWeekClasses(clsdata as WeeklyClassItem[]);
+    } else if (clsdata && typeof clsdata === 'object') {
+      setWeekClasses([clsdata as WeeklyClassItem]);
+    } else {
+      setWeekClasses([]);
+    }
+    // console.log('@@@cls',clsdata)
+  },[clsdata])
   const handleAddWeeklyClass = () => {
-    // Placeholder logic for adding a new class
-    const newClass: WeeklyClass = {
-      title: 'New Weekly Class',
-      day: 'Saturday',
-      time: '5:00 PM',
-      instructor: 'Sophia'
-    };
-    setWeekClasses([...weekClasses, newClass]);
+    setModalOpen(true)
   };
 
   return (
@@ -44,9 +51,9 @@ const WeeklyClasses = () => {
               className="bg-white p-3 rounded shadow-sm border border-green-100 flex justify-between items-center"
             >
               <div>
-                <p className="font-medium">{item.title}</p>
+                <p className="font-medium">{item.title} <span className="text-sm text-gray-500">• {item.type}</span></p>
                 <p className="text-sm text-gray-500">
-                  {item.day} • {item.time} • {item.instructor}
+                  {item.day} • {item.time} • {item.trainer}
                 </p>
               </div>
               <div className="flex gap-2">
@@ -68,7 +75,7 @@ const WeeklyClasses = () => {
                 <button
                   onClick={() => {
                     // Logic for deleting a class
-                    setWeekClasses(weekClasses.filter((_, i) => i !== index));
+                    deleteClass(weekClasses.filter((e) => e._id == item._id));
                   }}
                   className="text-red-500 hover:text-red-600 transition"
                   title="Delete"
@@ -82,6 +89,13 @@ const WeeklyClasses = () => {
       ) : (
         <p className="text-sm text-gray-500">No weekly classes added yet.</p>
       )}
+      <AddClassModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        trainers={trainers}
+        types={workoutTypes}
+        classType={"weekly"}
+      />
     </div>
   );
 };
