@@ -5,7 +5,14 @@ const {CreateClass,getClassesByAdminId,deleteClass,updateClass} = require('../co
 const userValidationSchema = require('../middlewares/userValidation');
 const {VerifyToken} = require('../middlewares/token')
 const {SendOtp,VerifyOtp} = require('../controllers/Otp.contoller')
-
+const {
+    addTrainer,
+    trainerLogin,
+    getAllTrainer,
+    getTrainerById,
+    updateTrainer,
+    deleteTrainer
+} = require('../controllers/Trainer.controller');
 
 router.get('/server',(req,res)=>res.send('Routing works'))
 router.post('/api/admin/register',AddAdmin)
@@ -21,4 +28,11 @@ router.delete('/api/classes/delete/:classId?', deleteClass);
 router.put('/api/classes/update/:classId?', updateClass);
 router.get('/api/classes/getClasses/:adminId?', getClassesByAdminId);
 router.get('/api/admin/me', GetAdminId);
+// Trainer routes
+router.post('/api/trainer/register', addTrainer);
+router.post('/api/trainer/login', trainerLogin);
+router.get('/api/trainer/getAll', getAllTrainer);
+router.get('/api/trainer/:id', getTrainerById);
+router.put('/api/trainer/:id', updateTrainer);
+router.delete('/api/trainer/:id', deleteTrainer);
 module.exports = router

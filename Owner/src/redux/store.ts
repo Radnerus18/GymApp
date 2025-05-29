@@ -2,13 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import dataReducer from './slice.ts';
 import authReducer from './authSlice.ts'
 import classReducer from './classSlice.ts'
-// Example reducer (replace with your actual reducers)
+import trainerReducer from './trainerSlice.tsx';
 
 const store = configureStore({
     reducer: {
         example: dataReducer,
         auth:authReducer,
-        class:classReducer
+        class:classReducer,
+        trainers: trainerReducer
     },
 });
 
